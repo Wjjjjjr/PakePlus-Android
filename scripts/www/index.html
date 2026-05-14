@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>华南农业大学食堂测评管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            min-height: calc(100vh - 20px);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #fff;
+            color: #333;
+            padding: 20px;
+            position: relative;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            color: #333;
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            text-align: center;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f0f5f5;
+            border: none;
+            color: #00a8a8;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #e0f0f0;
+        }
+
+        .back-btn.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: #00bfbf;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #00a8a8;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-secondary.active {
+            background: #e6f7f7;
+            color: #00a8a8;
+            border-color: #00bfbf;
+        }
+
+        .btn-danger {
+            background: #ff7875;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #ff4d4f;
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .list-item {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #f0f0f0;
+        }
+
+        .list-item:hover {
+            background: #f5f5f5;
+            border-color: #e0e0e0;
+        }
+
+        .list-item-info {
+            flex: 1;
+        }
+
+        .list-item-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .list-item-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .list-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .edit-btn {
+            background: #e6f7f7;
+            color: #00a8a8;
+        }
+
+        .edit-btn:hover {
+            background: #d0f0f0;
+        }
+
+        .delete-btn {
+            background: #fff1f0;
+            color: #ff4d4f;
+        }
+
+        .delete-btn:hover {
+            background: #ffe0e0;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #bbb;
+        }
+
+        .empty-state-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state-text {
+            font-size: 15px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 17px;
+            font-weight: 600;
+            text-align: center;
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+            background: #fafafa;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #00bfbf;
+            background: #fff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .avg-score {
+            display: inline-block;
+            background: #e6f7f7;
+            color: #00a8a8;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .dish-item {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .dish-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .dish-score {
+            display: inline-block;
+            background: #00bfbf;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-right: 10px;
+        }
+
+        .dish-note {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #e0e0e0;
+        }
+
+        .breadcrumb {
+            padding: 10px 15px;
+            background: #fafafa;
+            font-size: 13px;
+            color: #999;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .breadcrumb span {
+            color: #00a8a8;
+            cursor: pointer;
+        }
+
+        .breadcrumb span:hover {
+            text-decoration: underline;
+        }
+
+        .score-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-input-wrapper input {
+            flex: 1;
+        }
+
+        .score-hint {
+            font-size: 12px;
+            color: #bbb;
+        }
+
+        .sort-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 400px) {
+            .header h1 {
+                font-size: 18px;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            .list-item {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+            <h1 id="pageTitle">食堂列表</h1>
+            <div class="subtitle">华南农业大学食堂测评管理</div>
+        </div>
+        
+        <div class="breadcrumb" id="breadcrumb" style="display: none;"></div>
+        
+        <div class="content">
+            <div class="page active" id="canteenPage">
+                <div class="toolbar">
+                    <button class="btn btn-primary" onclick="showAddCanteenModal()">+ 新建食堂</button>
+                    <div class="sort-group">
+                        <button class="btn btn-secondary" id="sortCanteenName" onclick="sortCanteens('name')">按名称</button>
+                    </div>
+                </div>
+                <div class="list" id="canteenList"></div>
+            </div>
+            
+            <div class="page" id="floorPage">
+                <div class="toolbar">
+                    <button class="btn btn-primary" onclick="showAddFloorModal()">+ 新建楼层</button>
+                    <div class="sort-group">
+                        <button class="btn btn-secondary" id="sortFloorName" onclick="sortFloors('name')">按名称</button>
+                        <button class="btn btn-secondary" id="sortFloorScore" onclick="sortFloors('score')">按评分</button>
+                    </div>
+                </div>
+                <div class="list" id="floorList"></div>
+            </div>
+            
+            <div class="page" id="shopPage">
+                <div class="toolbar">
+                    <button class="btn btn-primary" onclick="showAddShopModal()">+ 新建商铺</button>
+                    <div class="sort-group">
+                        <button class="btn btn-secondary" id="sortShopName" onclick="sortShops('name')">按名称</button>
+                        <button class="btn btn-secondary" id="sortShopScore" onclick="sortShops('score')">按评分</button>
+                    </div>
+                </div>
+                <div class="list" id="shopList"></div>
+            </div>
+            
+            <div class="page" id="dishPage">
+                <div class="toolbar">
+                    <button class="btn btn-primary" onclick="showAddDishModal()">+ 新建菜品</button>
+                    <div class="sort-group">
+                        <button class="btn btn-secondary" id="sortDishName" onclick="sortDishes('name')">按名称</button>
+                        <button class="btn btn-secondary" id="sortDishScore" onclick="sortDishes('score')">按评分</button>
+                    </div>
+                </div>
+                <div class="list" id="dishList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header" id="modalTitle">新建</div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" id="modalConfirm">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let data = {
+            canteens: []
+        };
+
+        let currentLevel = 'canteen';
+        let currentCanteenId = null;
+        let currentFloorId = null;
+        let currentShopId = null;
+        let sortState = {
+            canteen: { field: 'name', asc: true },
+            floor: { field: 'name', asc: true },
+            shop: { field: 'name', asc: true },
+            dish: { field: 'name', asc: true }
+        };
+
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function saveData() {
+            localStorage.setItem('canteenRatingData', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('canteenRatingData');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+        }
+
+        function renderCanteens() {
+            const list = document.getElementById('canteenList');
+            if (data.canteens.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🍽️</div>
+                        <div class="empty-state-text">暂无食堂，点击上方按钮添加</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = data.canteens.map(canteen => `
+                <div class="list-item" onclick="enterCanteen('${canteen.id}')">
+                    <div class="list-item-info">
+                        <div class="list-item-name">${escapeHtml(canteen.name)}</div>
+                        <div class="list-item-meta">${canteen.floors.length} 个楼层</div>
+                    </div>
+                    <div class="list-item-actions" onclick="event.stopPropagation()">
+                        <button class="action-btn edit-btn" onclick="editCanteen('${canteen.id}')">✎</button>
+                        <button class="action-btn delete-btn" onclick="deleteCanteen('${canteen.id}')">✕</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            updateSortButtonState('canteen');
+        }
+
+        function renderFloors() {
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const list = document.getElementById('floorList');
+            
+            if (!canteen || canteen.floors.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏢</div>
+                        <div class="empty-state-text">暂无楼层，点击上方按钮添加</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = canteen.floors.map(floor => {
+                const avgScore = calculateFloorAvgScore(floor);
+                return `
+                    <div class="list-item" onclick="enterFloor('${floor.id}')">
+                        <div class="list-item-info">
+                            <div class="list-item-name">
+                                ${escapeHtml(floor.name)}
+                                ${avgScore !== null ? `<span class="avg-score">均分 ${avgScore.toFixed(1)}</span>` : ''}
+                            </div>
+                            <div class="list-item-meta">${floor.shops.length} 个商铺</div>
+                        </div>
+                        <div class="list-item-actions" onclick="event.stopPropagation()">
+                            <button class="action-btn edit-btn" onclick="editFloor('${floor.id}')">✎</button>
+                            <button class="action-btn delete-btn" onclick="deleteFloor('${floor.id}')">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateSortButtonState('floor');
+        }
+
+        function renderShops() {
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen?.floors.find(f => f.id === currentFloorId);
+            const list = document.getElementById('shopList');
+            
+            if (!floor || floor.shops.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏪</div>
+                        <div class="empty-state-text">暂无商铺，点击上方按钮添加</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = floor.shops.map(shop => {
+                const avgScore = calculateAvgScore(shop.dishes);
+                return `
+                    <div class="list-item" onclick="enterShop('${shop.id}')">
+                        <div class="list-item-info">
+                            <div class="list-item-name">
+                                ${escapeHtml(shop.name)}
+                                ${avgScore !== null ? `<span class="avg-score">均分 ${avgScore.toFixed(1)}</span>` : ''}
+                            </div>
+                            <div class="list-item-meta">${shop.dishes.length} 道菜品</div>
+                        </div>
+                        <div class="list-item-actions" onclick="event.stopPropagation()">
+                            <button class="action-btn edit-btn" onclick="editShop('${shop.id}')">✎</button>
+                            <button class="action-btn delete-btn" onclick="deleteShop('${shop.id}')">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateSortButtonState('shop');
+        }
+
+        function renderDishes() {
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen?.floors.find(f => f.id === currentFloorId);
+            const shop = floor?.shops.find(s => s.id === currentShopId);
+            const list = document.getElementById('dishList');
+            
+            if (!shop || shop.dishes.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🍜</div>
+                        <div class="empty-state-text">暂无菜品，点击上方按钮添加</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = shop.dishes.map(dish => `
+                <div class="dish-item">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div class="dish-name">${escapeHtml(dish.name)}</div>
+                        <div class="list-item-actions">
+                            <button class="action-btn edit-btn" onclick="editDish('${dish.id}')">✎</button>
+                            <button class="action-btn delete-btn" onclick="deleteDish('${dish.id}')">✕</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="dish-score">评分: ${dish.score}</span>
+                    </div>
+                    ${dish.note ? `<div class="dish-note">${escapeHtml(dish.note)}</div>` : ''}
+                </div>
+            `).join('');
+            
+            updateSortButtonState('dish');
+        }
+
+        function calculateAvgScore(dishes) {
+            if (!dishes || dishes.length === 0) return null;
+            const validDishes = dishes.filter(d => d.score !== null && d.score !== undefined);
+            if (validDishes.length === 0) return null;
+            const sum = validDishes.reduce((acc, d) => acc + parseFloat(d.score), 0);
+            return sum / validDishes.length;
+        }
+
+        function calculateFloorAvgScore(floor) {
+            if (!floor.shops || floor.shops.length === 0) return null;
+            let allDishes = [];
+            floor.shops.forEach(shop => {
+                if (shop.dishes && shop.dishes.length > 0) {
+                    allDishes = allDishes.concat(shop.dishes);
+                }
+            });
+            return calculateAvgScore(allDishes);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showPage(level) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(level + 'Page').classList.add('active');
+            
+            const backBtn = document.getElementById('backBtn');
+            const breadcrumb = document.getElementById('breadcrumb');
+            
+            if (level === 'canteen') {
+                backBtn.classList.remove('show');
+                breadcrumb.style.display = 'none';
+                document.getElementById('pageTitle').textContent = '食堂列表';
+            } else {
+                backBtn.classList.add('show');
+                breadcrumb.style.display = 'block';
+                updateBreadcrumb();
+            }
+            
+            currentLevel = level;
+        }
+
+        function updateBreadcrumb() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen?.floors.find(f => f.id === currentFloorId);
+            const shop = floor?.shops.find(s => s.id === currentShopId);
+            
+            let html = '<span onclick="goToCanteen()">食堂列表</span>';
+            let title = '';
+            
+            if (currentCanteenId && canteen) {
+                html += ' > <span onclick="goToFloor()">' + escapeHtml(canteen.name) + '</span>';
+                title = canteen.name;
+            }
+            if (currentFloorId && floor) {
+                html += ' > <span onclick="goToShop()">' + escapeHtml(floor.name) + '</span>';
+                title = floor.name;
+            }
+            if (currentShopId && shop) {
+                html += ' > ' + escapeHtml(shop.name);
+                title = shop.name;
+            }
+            
+            breadcrumb.innerHTML = html;
+            document.getElementById('pageTitle').textContent = title || '食堂列表';
+        }
+
+        function enterCanteen(id) {
+            currentCanteenId = id;
+            currentFloorId = null;
+            currentShopId = null;
+            showPage('floor');
+            renderFloors();
+        }
+
+        function enterFloor(id) {
+            currentFloorId = id;
+            currentShopId = null;
+            showPage('shop');
+            renderShops();
+        }
+
+        function enterShop(id) {
+            currentShopId = id;
+            showPage('dish');
+            renderDishes();
+        }
+
+        function goToCanteen() {
+            currentCanteenId = null;
+            currentFloorId = null;
+            currentShopId = null;
+            showPage('canteen');
+            renderCanteens();
+        }
+
+        function goToFloor() {
+            currentFloorId = null;
+            currentShopId = null;
+            showPage('floor');
+            renderFloors();
+        }
+
+        function goToShop() {
+            currentShopId = null;
+            showPage('shop');
+            renderShops();
+        }
+
+        function goBack() {
+            switch (currentLevel) {
+                case 'floor':
+                    goToCanteen();
+                    break;
+                case 'shop':
+                    goToFloor();
+                    break;
+                case 'dish':
+                    goToShop();
+                    break;
+            }
+        }
+
+        function showModal(title, bodyHtml, onConfirm) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = bodyHtml;
+            document.getElementById('modalOverlay').classList.add('show');
+            
+            const confirmBtn = document.getElementById('modalConfirm');
+            confirmBtn.onclick = onConfirm;
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+
+        function showAddCanteenModal() {
+            showModal('新建食堂', `
+                <div class="form-group">
+                    <label>食堂名称</label>
+                    <input type="text" id="canteenName" placeholder="请输入食堂名称">
+                </div>
+            `, () => {
+                const name = document.getElementById('canteenName').value.trim();
+                if (!name) {
+                    alert('请输入食堂名称');
+                    return;
+                }
+                data.canteens.push({
+                    id: generateId(),
+                    name: name,
+                    floors: []
+                });
+                saveData();
+                renderCanteens();
+                closeModal();
+            });
+        }
+
+        function editCanteen(id) {
+            const canteen = data.canteens.find(c => c.id === id);
+            showModal('编辑食堂', `
+                <div class="form-group">
+                    <label>食堂名称</label>
+                    <input type="text" id="canteenName" value="${escapeHtml(canteen.name)}" placeholder="请输入食堂名称">
+                </div>
+            `, () => {
+                const name = document.getElementById('canteenName').value.trim();
+                if (!name) {
+                    alert('请输入食堂名称');
+                    return;
+                }
+                canteen.name = name;
+                saveData();
+                renderCanteens();
+                closeModal();
+            });
+        }
+
+        function deleteCanteen(id) {
+            if (!confirm('确定要删除这个食堂吗？所有相关数据将被删除。')) return;
+            data.canteens = data.canteens.filter(c => c.id !== id);
+            saveData();
+            renderCanteens();
+        }
+
+        function showAddFloorModal() {
+            showModal('新建楼层', `
+                <div class="form-group">
+                    <label>楼层名称</label>
+                    <input type="text" id="floorName" placeholder="如：一楼、二楼">
+                </div>
+            `, () => {
+                const name = document.getElementById('floorName').value.trim();
+                if (!name) {
+                    alert('请输入楼层名称');
+                    return;
+                }
+                const canteen = data.canteens.find(c => c.id === currentCanteenId);
+                canteen.floors.push({
+                    id: generateId(),
+                    name: name,
+                    shops: []
+                });
+                saveData();
+                renderFloors();
+                closeModal();
+            });
+        }
+
+        function editFloor(id) {
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen.floors.find(f => f.id === id);
+            showModal('编辑楼层', `
+                <div class="form-group">
+                    <label>楼层名称</label>
+                    <input type="text" id="floorName" value="${escapeHtml(floor.name)}" placeholder="如：一楼、二楼">
+                </div>
+            `, () => {
+                const name = document.getElementById('floorName').value.trim();
+                if (!name) {
+                    alert('请输入楼层名称');
+                    return;
+                }
+                floor.name = name;
+                saveData();
+                renderFloors();
+                closeModal();
+            });
+        }
+
+        function deleteFloor(id) {
+            if (!confirm('确定要删除这个楼层吗？所有相关数据将被删除。')) return;
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            canteen.floors = canteen.floors.filter(f => f.id !== id);
+            saveData();
+            renderFloors();
+        }
+
+        function showAddShopModal() {
+            showModal('新建商铺', `
+                <div class="form-group">
+                    <label>商铺名称</label>
+                    <input type="text" id="shopName" placeholder="请输入商铺名称">
+                </div>
+            `, () => {
+                const name = document.getElementById('shopName').value.trim();
+                if (!name) {
+                    alert('请输入商铺名称');
+                    return;
+                }
+                const canteen = data.canteens.find(c => c.id === currentCanteenId);
+                const floor = canteen.floors.find(f => f.id === currentFloorId);
+                floor.shops.push({
+                    id: generateId(),
+                    name: name,
+                    dishes: []
+                });
+                saveData();
+                renderShops();
+                closeModal();
+            });
+        }
+
+        function editShop(id) {
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen.floors.find(f => f.id === currentFloorId);
+            const shop = floor.shops.find(s => s.id === id);
+            showModal('编辑商铺', `
+                <div class="form-group">
+                    <label>商铺名称</label>
+                    <input type="text" id="shopName" value="${escapeHtml(shop.name)}" placeholder="请输入商铺名称">
+                </div>
+            `, () => {
+                const name = document.getElementById('shopName').value.trim();
+                if (!name) {
+                    alert('请输入商铺名称');
+                    return;
+                }
+                shop.name = name;
+                saveData();
+                renderShops();
+                closeModal();
+            });
+        }
+
+        function deleteShop(id) {
+            if (!confirm('确定要删除这个商铺吗？所有相关数据将被删除。')) return;
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen.floors.find(f => f.id === currentFloorId);
+            floor.shops = floor.shops.filter(s => s.id !== id);
+            saveData();
+            renderShops();
+        }
+
+        function showAddDishModal() {
+            showModal('新建菜品', `
+                <div class="form-group">
+                    <label>菜名</label>
+                    <input type="text" id="dishName" placeholder="请输入菜名">
+                </div>
+                <div class="form-group">
+                    <label>评分</label>
+                    <div class="score-input-wrapper">
+                        <input type="number" id="dishScore" placeholder="请输入评分" min="1" max="10" step="0.1">
+                        <span class="score-hint">1-10分</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="dishNote" placeholder="可选，填写备注信息"></textarea>
+                </div>
+            `, () => {
+                const name = document.getElementById('dishName').value.trim();
+                let score = document.getElementById('dishScore').value;
+                const note = document.getElementById('dishNote').value.trim();
+                
+                if (!name) {
+                    alert('请输入菜名');
+                    return;
+                }
+                if (score === '') {
+                    alert('请输入评分');
+                    return;
+                }
+                
+                score = parseFloat(score);
+                if (score < 1 || score > 10) {
+                    alert('评分必须在1-10之间');
+                    return;
+                }
+                
+                const canteen = data.canteens.find(c => c.id === currentCanteenId);
+                const floor = canteen.floors.find(f => f.id === currentFloorId);
+                const shop = floor.shops.find(s => s.id === currentShopId);
+                shop.dishes.push({
+                    id: generateId(),
+                    name: name,
+                    score: score,
+                    note: note
+                });
+                saveData();
+                renderDishes();
+                closeModal();
+            });
+        }
+
+        function editDish(id) {
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen.floors.find(f => f.id === currentFloorId);
+            const shop = floor.shops.find(s => s.id === currentShopId);
+            const dish = shop.dishes.find(d => d.id === id);
+            
+            showModal('编辑菜品', `
+                <div class="form-group">
+                    <label>菜名</label>
+                    <input type="text" id="dishName" value="${escapeHtml(dish.name)}" placeholder="请输入菜名">
+                </div>
+                <div class="form-group">
+                    <label>评分</label>
+                    <div class="score-input-wrapper">
+                        <input type="number" id="dishScore" value="${dish.score}" placeholder="请输入评分" min="1" max="10" step="0.1">
+                        <span class="score-hint">1-10分</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>备注</label>
+                    <textarea id="dishNote" placeholder="可选，填写备注信息">${escapeHtml(dish.note || '')}</textarea>
+                </div>
+            `, () => {
+                const name = document.getElementById('dishName').value.trim();
+                let score = document.getElementById('dishScore').value;
+                const note = document.getElementById('dishNote').value.trim();
+                
+                if (!name) {
+                    alert('请输入菜名');
+                    return;
+                }
+                if (score === '') {
+                    alert('请输入评分');
+                    return;
+                }
+                
+                score = parseFloat(score);
+                if (score < 1 || score > 10) {
+                    alert('评分必须在1-10之间');
+                    return;
+                }
+                
+                dish.name = name;
+                dish.score = score;
+                dish.note = note;
+                saveData();
+                renderDishes();
+                closeModal();
+            });
+        }
+
+        function deleteDish(id) {
+            if (!confirm('确定要删除这道菜品吗？')) return;
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen.floors.find(f => f.id === currentFloorId);
+            const shop = floor.shops.find(s => s.id === currentShopId);
+            shop.dishes = shop.dishes.filter(d => d.id !== id);
+            saveData();
+            renderDishes();
+        }
+
+        function updateSortButtonState(level) {
+            const state = sortState[level];
+            const nameBtn = document.getElementById('sort' + level.charAt(0).toUpperCase() + level.slice(1) + 'Name');
+            
+            if (nameBtn) {
+                document.querySelectorAll('.sort-group .btn-secondary').forEach(btn => btn.classList.remove('active'));
+                
+                if (state.field === 'name') {
+                    nameBtn.classList.add('active');
+                    nameBtn.textContent = state.asc ? '名称↑' : '名称↓';
+                } else if (level !== 'canteen') {
+                    const scoreBtn = document.getElementById('sort' + level.charAt(0).toUpperCase() + level.slice(1) + 'Score');
+                    if (scoreBtn) {
+                        scoreBtn.classList.add('active');
+                        scoreBtn.textContent = state.asc ? '评分↑' : '评分↓';
+                    }
+                }
+            }
+        }
+
+        function sortCanteens(field) {
+            const state = sortState.canteen;
+            if (state.field === field) {
+                state.asc = !state.asc;
+            } else {
+                state.field = field;
+                state.asc = true;
+            }
+            
+            data.canteens.sort((a, b) => {
+                return state.asc 
+                    ? a.name.localeCompare(b.name, 'zh-CN')
+                    : b.name.localeCompare(a.name, 'zh-CN');
+            });
+            
+            saveData();
+            renderCanteens();
+        }
+
+        function sortFloors(field) {
+            const state = sortState.floor;
+            if (state.field === field) {
+                state.asc = !state.asc;
+            } else {
+                state.field = field;
+                state.asc = true;
+            }
+            
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            canteen.floors.sort((a, b) => {
+                if (field === 'name') {
+                    return state.asc 
+                        ? a.name.localeCompare(b.name, 'zh-CN')
+                        : b.name.localeCompare(a.name, 'zh-CN');
+                } else {
+                    const scoreA = calculateFloorAvgScore(a) || -1;
+                    const scoreB = calculateFloorAvgScore(b) || -1;
+                    return state.asc ? scoreA - scoreB : scoreB - scoreA;
+                }
+            });
+            
+            saveData();
+            renderFloors();
+        }
+
+        function sortShops(field) {
+            const state = sortState.shop;
+            if (state.field === field) {
+                state.asc = !state.asc;
+            } else {
+                state.field = field;
+                state.asc = true;
+            }
+            
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen.floors.find(f => f.id === currentFloorId);
+            floor.shops.sort((a, b) => {
+                if (field === 'name') {
+                    return state.asc 
+                        ? a.name.localeCompare(b.name, 'zh-CN')
+                        : b.name.localeCompare(a.name, 'zh-CN');
+                } else {
+                    const scoreA = calculateAvgScore(a.dishes) || -1;
+                    const scoreB = calculateAvgScore(b.dishes) || -1;
+                    return state.asc ? scoreA - scoreB : scoreB - scoreA;
+                }
+            });
+            
+            saveData();
+            renderShops();
+        }
+
+        function sortDishes(field) {
+            const state = sortState.dish;
+            if (state.field === field) {
+                state.asc = !state.asc;
+            } else {
+                state.field = field;
+                state.asc = true;
+            }
+            
+            const canteen = data.canteens.find(c => c.id === currentCanteenId);
+            const floor = canteen.floors.find(f => f.id === currentFloorId);
+            const shop = floor.shops.find(s => s.id === currentShopId);
+            shop.dishes.sort((a, b) => {
+                if (field === 'name') {
+                    return state.asc 
+                        ? a.name.localeCompare(b.name, 'zh-CN')
+                        : b.name.localeCompare(a.name, 'zh-CN');
+                } else {
+                    return state.asc ? a.score - b.score : b.score - a.score;
+                }
+            });
+            
+            saveData();
+            renderDishes();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderCanteens();
+        });
+
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlay')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
