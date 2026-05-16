@@ -499,6 +499,7 @@
         let currentFloorId = null;
         let currentShopId = null;
         let sortState = { dish: { field: 'score', asc: false } };
+        let isHistoryChange = false;
 
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -525,6 +526,50 @@
         function formatPrice(price) {
             if (price == null) return '';
             return price.toFixed(price % 1 === 0 ? 0 : 1).replace('.0', '');
+        }
+
+        function pushHistoryState() {
+            const state = {
+                level: currentLevel,
+                canteenId: currentCanteenId,
+                floorId: currentFloorId,
+                shopId: currentShopId
+            };
+            history.pushState(state, '', '');
+        }
+
+        function restoreState(state) {
+            if (!state) {
+                goToCanteen();
+                return;
+            }
+            currentLevel = state.level || 'canteen';
+            currentCanteenId = state.canteenId || null;
+            currentFloorId = state.floorId || null;
+            currentShopId = state.shopId || null;
+            
+            if (currentLevel === 'canteen') {
+                showPage('canteen');
+                renderCanteens();
+            } else if (currentLevel === 'floor') {
+                showPage('floor');
+                renderFloors();
+            } else if (currentLevel === 'shop') {
+                showPage('shop');
+                renderShops();
+            } else if (currentLevel === 'dish') {
+                showPage('dish');
+                renderDishes();
+            } else if (currentLevel === 'search') {
+                showPage('search');
+            } else if (currentLevel === 'favorites') {
+                showPage('favorites');
+                renderFavorites();
+            } else if (currentLevel === 'stats') {
+                switchTab('stats');
+            } else if (currentLevel === 'rank') {
+                switchTab('rank');
+            }
         }
 
         function showModal(title, bodyHtml, onConfirm) {
@@ -569,6 +614,12 @@
         }
 
         function switchTab(tab, element) {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
+            
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
             if (element) {
                 element.classList.add('active');
@@ -846,6 +897,11 @@
         }
 
         function enterCanteen(id) {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
             currentCanteenId = id;
             currentFloorId = null;
             currentShopId = null;
@@ -854,6 +910,11 @@
         }
 
         function enterFloor(id) {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
             currentFloorId = id;
             currentShopId = null;
             showPage('shop');
@@ -861,12 +922,22 @@
         }
 
         function enterShop(id) {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
             currentShopId = id;
             showPage('dish');
             renderDishes();
         }
 
         function goToCanteen() {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
             currentCanteenId = null;
             currentFloorId = null;
             currentShopId = null;
@@ -875,6 +946,11 @@
         }
 
         function goToFloor() {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
             currentFloorId = null;
             currentShopId = null;
             showPage('floor');
@@ -882,21 +958,34 @@
         }
 
         function goToShop() {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
             currentShopId = null;
             showPage('shop');
             renderShops();
         }
 
         function goBack() {
-            switch (currentLevel) {
-                case 'floor': goToCanteen(); break;
-                case 'shop': goToFloor(); break;
-                case 'dish': goToShop(); break;
-                case 'search':
-                case 'favorites':
-                    switchTab('canteen');
-                    break;
-                default: switchTab('canteen');
+            if (history.length > 1) {
+                history.back();
+            } else {
+                switch (currentLevel) {
+                    case 'floor': goToCanteen(); break;
+                    case 'shop': goToFloor(); break;
+                    case 'dish': goToShop(); break;
+                    case 'search':
+                    case 'favorites':
+                    case 'stats':
+                    case 'rank':
+                        switchTab('canteen');
+                        break;
+                    default:
+                        // 如果已经在首页，可以什么都不做，或者提示用户
+                        break;
+                }
             }
         }
 
@@ -1162,6 +1251,12 @@
         }
 
         function showSearchResults() {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
+            
             const input1 = document.getElementById('searchInput');
             const input2 = document.getElementById('searchInput2');
             const keyword = ((input1?.value || '') + (input2?.value || '')).trim().toLowerCase();
@@ -1196,6 +1291,11 @@
         }
 
         function navigateToDish(canteenId, floorId, shopId) {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
             currentCanteenId = canteenId;
             currentFloorId = floorId;
             currentShopId = shopId;
@@ -1204,6 +1304,11 @@
         }
 
         function showFavorites() {
+            if (isHistoryChange) {
+                isHistoryChange = false;
+            } else {
+                pushHistoryState();
+            }
             renderFavorites();
             showPage('favorites');
             document.getElementById('backBtn').classList.add('show');
@@ -1343,6 +1448,19 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             renderCanteens();
+            
+            // 初始化历史记录
+            history.replaceState({
+                level: currentLevel,
+                canteenId: currentCanteenId,
+                floorId: currentFloorId,
+                shopId: currentShopId
+            }, '', '');
+        });
+
+        window.addEventListener('popstate', (e) => {
+            isHistoryChange = true;
+            restoreState(e.state);
         });
 
         document.getElementById('modalOverlay').addEventListener('click', (e) => {
