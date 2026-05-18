@@ -578,6 +578,11 @@
             document.getElementById('modalOverlay').classList.add('show');
             document.getElementById('modalConfirm').onclick = onConfirm;
             
+            // 重置确定按钮状态
+            const confirmBtn = document.getElementById('modalConfirm');
+            confirmBtn.style.display = 'inline-block';
+            confirmBtn.textContent = '确定';
+            
             // 自动聚焦第一个输入框
             setTimeout(() => {
                 const firstInput = document.querySelector('#modalBody input, #modalBody textarea, #modalBody select');
