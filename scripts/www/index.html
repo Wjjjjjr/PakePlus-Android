@@ -450,6 +450,11 @@
     font-size: 1.1rem;
     font-weight: 600;
     letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .calendar-title .title-short {
+    display: none;
   }
 
   .calendar-nav {
@@ -814,9 +819,16 @@
       grid-template-columns: 1fr;
     }
 
+    .content {
+      order: -1;
+      max-height: none;
+      padding: 1rem;
+    }
+
     .sidebar {
+      order: 1;
       border-right: none;
-      border-bottom: 1px solid var(--rule);
+      border-top: 1px solid var(--rule);
       max-height: none;
       padding: 1rem;
     }
@@ -824,11 +836,6 @@
     .task-panel {
       flex: none;
       max-height: 55vh;
-    }
-
-    .content {
-      max-height: none;
-      padding: 1rem;
     }
 
     .stats {
@@ -841,6 +848,35 @@
 
     .header h1 {
       font-size: 1.1rem;
+    }
+
+    .calendar-header {
+      margin-bottom: 1rem;
+      gap: 0.5rem;
+    }
+
+    .calendar-title {
+      font-size: 1rem;
+    }
+
+    .calendar-title .title-full {
+      display: none;
+    }
+
+    .calendar-title .title-short {
+      display: inline;
+    }
+
+    .calendar-nav {
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .calendar-nav button {
+      padding: 0.35rem 0.6rem;
+      font-size: 0.75rem;
+      min-width: 44px;
+      text-align: center;
     }
   }
 
@@ -949,7 +985,10 @@
     <main class="content">
       <div class="calendar">
         <div class="calendar-header">
-          <div class="calendar-title" id="calendarTitle">2026年 9月</div>
+          <div class="calendar-title">
+            <span class="title-full" id="calendarTitleFull">2026年 9月</span>
+            <span class="title-short" id="calendarTitleShort">2026/09</span>
+          </div>
           <div class="calendar-nav">
             <button onclick="changeMonth(-1)">← 上月</button>
             <button onclick="goToday()">今天</button>
@@ -1341,9 +1380,11 @@
 
   function renderCalendar() {
     const grid = document.getElementById('calendarGrid');
-    const title = document.getElementById('calendarTitle');
+    const titleFull = document.getElementById('calendarTitleFull');
+    const titleShort = document.getElementById('calendarTitleShort');
 
-    title.textContent = currentYear + '年 ' + (currentMonth + 1) + '月';
+    titleFull.textContent = currentYear + '年 ' + (currentMonth + 1) + '月';
+    titleShort.textContent = currentYear + '/' + String(currentMonth + 1).padStart(2, '0');
 
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
